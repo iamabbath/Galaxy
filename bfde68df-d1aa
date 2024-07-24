@@ -7,3 +7,207 @@ vless://bfde68df-d1aa-4fd6-ac8e-06e2b09b7f93@[2a0b:4140:6a10::2]:8082?encryption
 vless://bfde68df-d1aa-4fd6-ac8e-06e2b09b7f93@77.221.141.154:8082?encryption=none&security=none&type=tcp&headerType=http&host=discord.com#SV%20%7C%20%F0%9F%87%B8%F0%9F%87%AA%20%7C%2003
 vless://bfde68df-d1aa-4fd6-ac8e-06e2b09b7f93@77.221.141.154:2083?encryption=none&security=none&type=tcp&headerType=http&host=discord.com#SV%20%7C%20%F0%9F%87%B8%F0%9F%87%AA%20%7C%2004
 vless://bfde68df-d1aa-4fd6-ac8e-06e2b09b7f93@0.0.0.0:443?encryption=none&security=none&type=tcp&headerType=http&host=discord.com#%D8%A8%D8%B1%D8%A7%DB%8C%20%D9%81%D8%B9%D8%A7%D9%84%20%D8%A7%D8%B3%D8%AA%D9%81%D8%A7%D8%AF%D9%87%20ipv6%20%D8%B1%D8%A7%20%D9%81%D8%B9%D8%A7%D9%84%20%DA%A9%D9%86%DB%8C%D8%AF
+{
+    "dns": {
+        "hosts": {
+            "domain:googleapis.cn": "googleapis.com"
+        },
+        "servers": [
+            "https://8.8.8.8/dns-query",
+            {
+                "address": "8.8.8.8",
+                "domains": [
+                    "geosite:category-ir"
+                ],
+                "expectIPs": [
+                    "geoip:ir"
+                ],
+                "port": 53
+            }
+        ]
+    },
+    "inbounds": [
+        {
+            "port": 10808,
+            "protocol": "socks",
+            "settings": {
+                "auth": "noauth",
+                "udp": true,
+                "userLevel": 8
+            },
+            "sniffing": {
+                "destOverride": [
+                    "http",
+                    "tls"
+                ],
+                "enabled": true
+            },
+            "tag": "socks"
+        },
+        {
+            "port": 10809,
+            "protocol": "http",
+            "settings": {
+                "userLevel": 8
+            },
+            "tag": "http"
+        },
+        {
+            "listen": "127.0.0.1",
+            "port": 10853,
+            "protocol": "dokodemo-door",
+            "settings": {
+                "address": "1.1.1.1",
+                "network": "tcp,udp",
+                "port": 53
+            },
+            "tag": "dns-in"
+        }
+    ],
+    "log": {
+        "loglevel": "warning"
+    },
+    "outbounds": [
+        {
+            "mux": {
+                "concurrency": -1,
+                "enabled": false,
+                "xudpConcurrency": 8,
+                "xudpProxyUDP443": ""
+            },
+            "protocol": "vless",
+            "settings": {
+                "vnext": [
+                    {
+                        "address": "www.speedtest.net",
+                        "port": 443,
+                        "users": [
+                            {
+                                "encryption": "none",
+                                "flow": "",
+                                "id": "bfde68df-d1aa-4fd6-ac8e-06e2b09b7f93",
+                                "level": 8,
+                                "security": "auto"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "ws",
+                "sockopt": {
+                    "dialerProxy": "fragment-out"
+                },
+                "security": "tls",
+                "tlsSettings": {
+                    "allowInsecure": false,
+                    "alpn": [
+                        "h2",
+                        "http/1.1"
+                    ],
+                    "fingerprint": "chrome",
+                    "publicKey": "",
+                    "serverName": "st.itsover.filegear-sg.me",
+                    "shortId": "",
+                    "show": false,
+                    "spiderX": ""
+                },
+                "wsSettings": {
+                    "headers": {
+                        "Host": "st.itsover.filegear-sg.me"
+                    },
+                    "path": "/ws"
+                }
+            },
+            "tag": "proxy"
+        },
+        {
+            "protocol": "freedom",
+            "settings": {},
+            "tag": "direct"
+        },
+        {
+            "protocol": "freedom",
+            "settings": {
+                "domainStrategy": "AsIs",
+                "fragment": {
+                    "packets": "tlshello",
+                    "length": "100-200",
+                    "interval": "10-20"
+                }
+            },
+            "tag": "fragment-out"
+        },
+        {
+            "protocol": "blackhole",
+            "settings": {
+                "response": {
+                    "type": "http"
+                }
+            },
+            "tag": "block"
+        },
+        {
+            "protocol": "dns",
+            "tag": "dns-out"
+        }
+    ],
+    "policy": {
+        "levels": {
+            "8": {
+                "connIdle": 300,
+                "downlinkOnly": 1,
+                "handshake": 4,
+                "uplinkOnly": 1
+            }
+        },
+        "system": {
+            "statsOutboundUplink": true,
+            "statsOutboundDownlink": true
+        }
+    },
+    "routing": {
+        "domainStrategy": "IPIfNonMatch",
+        "rules": [
+            {
+                "inboundTag": [
+                    "dns-in"
+                ],
+                "outboundTag": "dns-out",
+                "type": "field"
+            },
+            {
+                "ip": [
+                    "8.8.8.8"
+                ],
+                "outboundTag": "direct",
+                "port": "53",
+                "type": "field"
+            },
+            {
+                "domain": [
+                    "geosite:category-ir"
+                ],
+                "outboundTag": "direct",
+                "type": "field"
+            },
+            {
+                "ip": [
+                    "geoip:ir"
+                ],
+                "outboundTag": "direct",
+                "type": "field"
+            },
+            {
+                "ip": [
+                    "10.10.34.34",
+                    "10.10.34.35",
+                    "10.10.34.36"
+                ],
+                "outboundTag": "block",
+                "type": "field"
+            }
+        ]
+    },
+    "stats": {}
+}
